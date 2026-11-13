@@ -1,0 +1,12 @@
+/target/
+/results/*.csv
+/results/*.json
+/results/*.log
+/results/environment.txt
+/.idea/
+/.classpath
+/.project
+/.settings/
+.DS_Store
+
+/AGENTS.md

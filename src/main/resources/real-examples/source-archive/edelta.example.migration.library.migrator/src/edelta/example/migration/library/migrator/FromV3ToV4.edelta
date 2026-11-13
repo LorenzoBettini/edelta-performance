@@ -1,0 +1,24 @@
+package edelta.exaple.migration.library.migrator
+
+metamodel "ecore"
+
+migrate "http://edelta/Library/v3" to "http://edelta/Library/v4"
+migrate "http://edelta/Books/v3" to "http://edelta/Books/v4"
+
+modifyEcore compactItems epackage library {
+	ecoreref(BookItem).addNewEAttribute("numOfCopies", ecoreref(EInt)) [
+		defaultValue = 1
+	]
+
+	val bookItemsFeature = ecoreref(library.Library.bookItems)
+	val bookFeature = ecoreref(library.BookItem.book)
+	val numOfCopiesFeature = ecoreref(BookItem.numOfCopies)
+	modelMigration[
+		copyGroupingCountingRule(
+			bookItemsFeature,
+			bookFeature,
+			numOfCopiesFeature
+		)
+	]
+
+}

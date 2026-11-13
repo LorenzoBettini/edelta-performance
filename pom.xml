@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.example</groupId>
+	<artifactId>edelta-performance</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<name>Edelta Compiler Performance Experiments</name>
+	<description>Independent JMH evaluation of Edelta 3.13.0 with interpretation
+		enabled and disabled</description>
+
+	<properties>
+		<xtextVersion>2.44.0</xtextVersion>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>21</maven.compiler.release>
+		<edelta.version>3.13.0</edelta.version>
+		<jmh.version>1.37</jmh.version>
+		<junit.version>5.12.2</junit.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>xtext-dev-bom</artifactId>
+				<version>${xtextVersion}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- The released compiler and its transitive Xtext/EMF dependencies. -->
+		<dependency>
+			<groupId>io.github.lorenzobettini.edelta</groupId>
+			<artifactId>edelta</artifactId>
+			<version>${edelta.version}</version>
+		</dependency>
+		<!-- Real examples invoke the published Edelta refactorings library. -->
+		<dependency>
+			<groupId>io.github.lorenzobettini.edelta</groupId>
+			<artifactId>edelta.refactorings.lib</artifactId>
+			<version>${edelta.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.xtext</groupId>
+			<artifactId>org.eclipse.xtext.xbase</artifactId>
+			<version>${xtextVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.mwe2.runtime</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>${jmh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.14.0</version>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.openjdk.jmh</groupId>
+							<artifactId>jmh-generator-annprocess</artifactId>
+							<version>${jmh.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<finalName>benchmarks</finalName>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>all</shadedClassifierName>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+										<!-- This is a classpath JAR, not a Java module or Eclipse UI bundle. -->
+										<exclude>module-info.class</exclude>
+										<exclude>META-INF/versions/*/module-info.class</exclude>
+										<exclude>about.ini</exclude>
+										<exclude>about.mappings</exclude>
+										<exclude>about.properties</exclude>
+										<exclude>modeling32.png</exclude>
+										<exclude>.api_description</exclude>
+										<exclude>.options</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+							<!-- EMF/Xtext bundles share this root resource; dropping all but
+							     one loses diagnostic messages used during validation. -->
+							<transformer
+								implementation="org.apache.maven.plugins.shade.resource.ResourceBundleAppendingTransformer">
+								<basename>plugin</basename>
+							</transformer>
+							<transformer
+								implementation="org.apache.maven.plugins.shade.resource.properties.PropertiesTransformer">
+								<resource>log4j.properties</resource>
+							</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>org.openjdk.jmh.Main</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

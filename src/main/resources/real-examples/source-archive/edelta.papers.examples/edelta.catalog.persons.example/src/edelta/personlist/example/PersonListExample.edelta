@@ -1,0 +1,34 @@
+import edelta.refactorings.lib.EdeltaRefactorings
+
+package edelta.personlist.example
+
+metamodel "PersonList"
+metamodel "ecore"
+
+use EdeltaRefactorings as refactorings
+
+modifyEcore improvePerson epackage PersonList {
+	refactorings.enumToSubclasses(ecoreref(Person.gender))
+	refactorings.mergeFeatures("name",
+		#[ecoreref(Person.firstname), ecoreref(Person.lastname)])
+}
+
+modifyEcore introducePlace epackage PersonList {
+	refactorings.extractSuperclass("Place",
+		#[ecoreref(LivingPlace.address), ecoreref(WorkPlace.address)])
+}
+
+modifyEcore introduceWorkingPosition epackage PersonList {
+	refactorings.referenceToClass("WorkingPosition", ecoreref(Person.works)) => [
+		addNewEAttribute("description", ecoreref(EString))
+	]
+	ecoreref(WorkPlace.persons).name = "position"
+}
+
+modifyEcore improveList epackage PersonList {
+	refactorings.mergeFeatures("places",
+		ecoreref(Place),
+		#[ecoreref(List.wplaces), ecoreref(List.lplaces)]
+	)
+}
+

@@ -1,0 +1,21 @@
+import edelta.refactorings.lib.EdeltaRefactorings
+
+package com.example
+
+metamodel "PersonList"
+metamodel "ecore"
+
+use EdeltaRefactorings as extension refactorings
+
+modifyEcore evolvePerson epackage PersonList {
+	extractSuperclass("Person",
+		#[ecoreref(Student.name), ecoreref(Teacher.name)])
+	// performing another extractSuperclass("Person", ...
+	// would lead to an error since the class "Person" already
+	// exists at this point. Try to uncomment the next two lines
+	// to verify that.
+//	extractSuperclass("Person",
+//		#[ecoreref(Student.age), ecoreref(Teacher.age)])
+	pullUpFeatures(ecoreref(Person),
+		#[ecoreref(Student.age), ecoreref(Teacher.age)])
+}

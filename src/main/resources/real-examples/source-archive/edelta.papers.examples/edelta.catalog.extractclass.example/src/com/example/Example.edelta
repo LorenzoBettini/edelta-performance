@@ -1,0 +1,17 @@
+import edelta.refactorings.lib.EdeltaRefactorings
+
+package com.example
+
+metamodel "PersonList"
+metamodel "ecore"
+
+use EdeltaRefactorings as extension refactorings
+
+modifyEcore evolvePerson epackage PersonList {
+	extractClass("WorkAddress", #[
+		ecoreref(Person.street),
+		ecoreref(Person.workplace),
+		ecoreref(Person.houseNumber)
+	])
+	inlineClass(ecoreref(WorkAddress))
+}

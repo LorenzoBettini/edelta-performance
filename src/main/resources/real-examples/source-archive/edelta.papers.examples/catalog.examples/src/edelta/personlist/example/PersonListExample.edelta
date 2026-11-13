@@ -1,0 +1,38 @@
+import edelta.refactorings.lib.EdeltaRefactorings
+
+// IMPORTANT: ecores must be in a source directory
+// otherwise you can't refer to them
+package edelta.personlist.example
+
+metamodel "PersonList"
+metamodel "ecore"
+
+use EdeltaRefactorings as extension refactorings
+
+modifyEcore improvePerson epackage PersonList {
+	// since 'refactorings' is an 'extension'
+	// we use its method as an extension method
+	ecoreref(Person.gender).enumToSubclasses()
+	refactorings.mergeFeatures("name",
+		#[ecoreref(Person.firstname), ecoreref(Person.lastname)])
+}
+
+modifyEcore introducePlace epackage PersonList {
+	extractSuperclass("Place",
+		#[ecoreref(LivingPlace.address), ecoreref(WorkPlace.address)])
+}
+
+modifyEcore introduceWorkingPosition epackage PersonList {
+	referenceToClass("WorkingPosition", ecoreref(Person.works)) => [
+		addNewEAttribute("description", ecoreref(EString))
+	]
+	ecoreref(WorkPlace.persons).name = "position"
+}
+
+modifyEcore improveList epackage PersonList {
+	refactorings.mergeFeatures("places",
+		ecoreref(Place),
+		#[ecoreref(List.wplaces), ecoreref(List.lplaces)]
+	)
+}
+
